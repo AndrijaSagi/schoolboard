@@ -1,6 +1,7 @@
 {
     "require": {
-        "illuminate/database": "^6.0"
+        "illuminate/database": "^6.0",
+        "fzaninotto/faker": "^1.8"
     },
 
 "autoload": {

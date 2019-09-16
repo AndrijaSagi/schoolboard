@@ -18,6 +18,8 @@ class Grade extends Eloquent
 
    ];
 
+   protected $hidden = ['id', 'student_id', 'created_at', 'updated_at'];
+
    /*
    * Get Gradess of Student
    *

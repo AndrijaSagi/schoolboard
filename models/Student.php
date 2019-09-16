@@ -16,10 +16,8 @@ class Student extends Eloquent
        'name'
    ];
 
-  protected $with = ['grades'];
-
    /*
-   * Get Gradess of Student
+   * Student has Grades
    *
    */
 
@@ -31,60 +29,61 @@ class Student extends Eloquent
    }
 
    /*
-   * Get all Students
+   * Student belongs to Board
    *
    */
-
-   public function getStudents()
+   public function board()
 
    {
-       return $this->get();
+       return $this->belongsTo('Board');
 
    }
 
-   public function getStudentWithGrades($id)
+   public function getStudentById($id)
 
    {
        return $this->find($id);
    }
 
-   public function average($id)
+   public function calculateAverageGrade($user)
 
    {
-      return round($this->find($id)->grades->pluck('grade')->avg());
+      $grades =  $user->grades->pluck('grade');
+      return round($grades->avg());
    }
 
-   public function csmPass($average)
-
+   public function csmbCalculate($user)
    {
-      if ($average >= 7 )
+      $grades = $user->grades->pluck('grade');
+      if($grades->count() > 2)
       {
-        return 'Pass';
+        $lowestGrade = $user->grades->pluck('grade')->min();
+        $filteredGrades = $grades->filter(function ($value, $key) use ($lowestGrade) {
+            return $value > $lowestGrade;
+        });
+        $highestGrade = $filteredGrades->max();
       }
-
-      return 'Fail';
+      $highestGrade = $grades->max();
+      return $user->board->csmbStatus($highestGrade);
    }
 
-   public function csmbPass($id)
+  public function response($user, $status, $average)
+  {
+      return collect(['id' => $user->id, 'name' => $user->name, 'grades' => $user->grades, 'average' => $average, 'status' => $status]);
+  }
+
+  public function getStudent($id)
 
    {
-      $grades = $this->find($id)->grades->pluck('grade');
-      $lowestGrade = $this->find($id)->grades->pluck('grade')->min();
-      $filtered = $grades->filter(function ($value, $key) use ($lowestGrade) {
-          return $value > $lowestGrade;
-      });
-      $highestGrade = $filtered->max();
-      return $highestGrade;
-   }
-
-  public function response($id)
-
-   {
-      $user = $this->findOrFail($id);
-      $average = $this->average($id);
-      $pass = $this->csmPass($average);
-      $csmb = $this->csmbPass($id);
-      return collect(['id' => $user->id, 'name' => $user->name, 'average' => $average, 'pass' => $pass, 'csmb' => $csmb]);
+      $user = $this->getStudentById($id);
+      $average = $this->calculateAverageGrade($user);
+      if($user->board->name == 'CSM')
+      {
+        $status = $user->board->csmStatus($average); 
+        return $this->response($user, $status, $average);
+      }
+      $status = $this->csmbCalculate($user);
+      return $this->response($user, $status, $average);
    }
 
  }
