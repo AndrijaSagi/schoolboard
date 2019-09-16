@@ -5,7 +5,6 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
 class Student extends Eloquent
 
 {
-
    /**
    * The attributes that are mass assignable.
    *
@@ -22,7 +21,6 @@ class Student extends Eloquent
    */
 
    public function grades()
-
    {
        return $this->hasMany('Grade');
 
@@ -33,20 +31,17 @@ class Student extends Eloquent
    *
    */
    public function board()
-
    {
        return $this->belongsTo('Board');
 
    }
 
    public function getStudentById($id)
-
    {
        return $this->find($id);
    }
 
    public function calculateAverageGrade($user)
-
    {
       $grades =  $user->grades->pluck('grade');
       return round($grades->avg());
@@ -69,12 +64,11 @@ class Student extends Eloquent
 
   public function response($user, $status, $average)
   {
-      return collect(['id' => $user->id, 'name' => $user->name, 'grades' => $user->grades, 'average' => $average, 'status' => $status]);
+    return collect(['id' => $user->id, 'name' => $user->name, 'grades' => $user->grades, 'average' => $average, 'status' => $status]);
   }
 
   public function getStudent($id)
-
-   {
+  {
       $user = $this->getStudentById($id);
       $average = $this->calculateAverageGrade($user);
       if($user->board->name == 'CSM')
@@ -84,6 +78,5 @@ class Student extends Eloquent
       }
       $status = $this->csmbCalculate($user);
       return $this->response($user, $status, $average);
-   }
-
- }
+  }
+}
